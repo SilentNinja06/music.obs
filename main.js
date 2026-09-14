@@ -29,7 +29,7 @@ __export(main_exports, {
   default: () => MeridianMusicPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian9 = require("obsidian");
+var import_obsidian10 = require("obsidian");
 
 // ../../packages/core/dist/settings/framework.js
 function mergeSettings(defaults, loaded) {
@@ -375,6 +375,12 @@ var MusicStore = class {
     await this.app.vault.append(work, `
 - [[${scrap.basename}]]
 `);
+  }
+  /** Delete an idea (work or scrap). Routed through the file manager so it
+   * honours the vault's "Deleted files" setting (system trash / .trash / permanent). */
+  async deleteNote(note) {
+    const f = this.fileFor(note);
+    if (f) await this.app.fileManager.trashFile(f);
   }
   async addAudioToNote(file, audioPath) {
     await this.app.fileManager.processFrontMatter(file, (f) => {
@@ -812,9 +818,48 @@ function renderLine(body, line) {
 }
 
 // src/catalogview.ts
+var import_obsidian9 = require("obsidian");
+
+// src/confirm.ts
 var import_obsidian8 = require("obsidian");
+var ConfirmModal = class extends import_obsidian8.Modal {
+  constructor(app, opts, onResult) {
+    super(app);
+    this.opts = opts;
+    this.onResult = onResult;
+    this.resolved = false;
+  }
+  onOpen() {
+    var _a, _b;
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("mrmu-confirm");
+    contentEl.createEl("h3", { text: this.opts.title });
+    if (this.opts.body) contentEl.createEl("p", { cls: "mrmu-confirm-body", text: this.opts.body });
+    const row = contentEl.createDiv({ cls: "mrmu-confirm-actions" });
+    const cancel = row.createEl("button", { text: (_a = this.opts.cancelText) != null ? _a : "Cancel" });
+    cancel.addEventListener("click", () => this.finish(false));
+    const confirm = row.createEl("button", { cls: "mod-cta" + (this.opts.danger ? " mod-warning" : ""), text: (_b = this.opts.confirmText) != null ? _b : "Confirm" });
+    confirm.addEventListener("click", () => this.finish(true));
+    window.setTimeout(() => confirm.focus(), 0);
+  }
+  finish(ok) {
+    this.resolved = true;
+    this.onResult(ok);
+    this.close();
+  }
+  onClose() {
+    this.contentEl.empty();
+    if (!this.resolved) this.onResult(false);
+  }
+};
+function confirmAction(app, opts) {
+  return new Promise((resolve) => new ConfirmModal(app, opts, resolve).open());
+}
+
+// src/catalogview.ts
 var VIEW_TYPE_MUSIC = "meridian-music-catalog";
-var MusicCatalogView = class extends import_obsidian8.ItemView {
+var MusicCatalogView = class extends import_obsidian9.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.plugin = plugin;
@@ -926,13 +971,33 @@ var MusicCatalogView = class extends import_obsidian8.ItemView {
     }
     if (n.fm.audio && n.fm.audio.length) {
       const a = meta.createSpan({ cls: "mrmu-badge mrmu-badge-audio" });
-      (0, import_obsidian8.setIcon)(a.createSpan(), "music");
+      (0, import_obsidian9.setIcon)(a.createSpan(), "music");
       a.createSpan({ text: String(n.fm.audio.length) });
     }
-    row.addEventListener("click", () => {
+    main.addEventListener("click", () => {
       const f = this.plugin.store.fileFor(n);
       if (f) void this.app.workspace.getLeaf(false).openFile(f);
     });
+    const del = row.createEl("button", { cls: "mrmu-icon-btn mrmu-row-del", attr: { "aria-label": "Delete this idea", title: "Delete this idea" } });
+    (0, import_obsidian9.setIcon)(del, "trash-2");
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      void this.confirmDelete(n);
+    });
+  }
+  async confirmDelete(n) {
+    const name = n.fm.title || n.basename;
+    const ok = await confirmAction(this.app, {
+      title: "Delete this idea?",
+      body: `\u201C${name}\u201D will be moved to your vault's trash. This can't be undone from here.`,
+      confirmText: "Delete",
+      cancelText: "Keep",
+      danger: true
+    });
+    if (!ok) return;
+    await this.plugin.store.deleteNote(n);
+    this.plugin.notifyChanged();
+    new import_obsidian9.Notice(`Deleted: ${name}`);
   }
   renderListOnly() {
     this.render();
@@ -951,7 +1016,7 @@ function toggle(arr, v) {
 
 // src/main.ts
 var MUSIC_CHANGED_EVENT = "meridian-music:changed";
-var MeridianMusicPlugin = class extends import_obsidian9.Plugin {
+var MeridianMusicPlugin = class extends import_obsidian10.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;

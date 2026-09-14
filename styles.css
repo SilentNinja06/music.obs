@@ -205,10 +205,24 @@
 	padding: 0.55rem 0.6rem;
 	border-radius: 10px;
 	background: var(--background-secondary);
-	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
 }
 .mrmu-row:hover {
 	background: var(--background-modifier-hover);
+}
+.mrmu-row-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	cursor: pointer;
+}
+.mrmu-row-del {
+	flex: none;
+	color: var(--text-faint);
+}
+.mrmu-row-del:hover {
+	color: var(--text-error, #c0392b);
 }
 .mrmu-row-scrap {
 	border-left: 3px solid var(--background-modifier-border);
@@ -247,6 +261,20 @@
 .mrmu-status-done {
 	background: var(--background-modifier-success, #2e7d32);
 	color: #fff;
+}
+
+/* ---- confirm modal ---- */
+.mrmu-confirm-body {
+	color: var(--text-muted);
+	margin: 0.4rem 0 0.9rem;
+}
+.mrmu-confirm-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+.mrmu-confirm-actions button {
+	min-height: 38px;
 }
 
 /* ---- ChordPro ---- */
