@@ -1,0 +1,317 @@
+/* Meridian Music — capture modal, catalog, ChordPro, audio. Mobile-first with
+   large touch targets; leans on Obsidian theme variables so it inherits the
+   MERIDIAN skin when active. */
+
+/* ---- shared bits ---- */
+.mrmu-label {
+	font-size: 0.75em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+	margin-bottom: 0.35rem;
+}
+.mrmu-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+.mrmu-chip,
+.mrmu-pill {
+	min-height: 36px;
+	padding: 0.4rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	cursor: pointer;
+}
+.mrmu-chip.is-active,
+.mrmu-pill.is-on {
+	background: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+.mrmu-seg {
+	display: inline-flex;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+	overflow: hidden;
+}
+.mrmu-seg button {
+	min-height: 38px;
+	padding: 0.4rem 0.8rem;
+	background: transparent;
+	color: var(--text-muted);
+	border: 0;
+	cursor: pointer;
+	box-shadow: none;
+}
+.mrmu-seg button.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+.mrmu-icon-btn {
+	background: transparent;
+	border: 0;
+	padding: 4px 6px;
+	cursor: pointer;
+	color: var(--text-muted);
+	box-shadow: none;
+}
+.mrmu-search {
+	width: 100%;
+}
+.mrmu-empty {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	padding: 0.5rem 0;
+}
+
+/* ---- capture modal ---- */
+.mrmu-capture .mrmu-field {
+	margin: 0.7rem 0;
+}
+.mrmu-body {
+	width: 100%;
+	resize: vertical;
+	min-height: 5.5rem;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+.mrmu-dest-body {
+	margin-top: 0.5rem;
+}
+.mrmu-worklist {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	max-height: 40vh;
+	overflow-y: auto;
+	margin-top: 0.35rem;
+}
+.mrmu-workrow {
+	padding: 0.5rem 0.6rem;
+	border-radius: 8px;
+	background: var(--background-secondary);
+	cursor: pointer;
+}
+.mrmu-workrow:hover {
+	background: var(--background-modifier-hover);
+}
+.mrmu-chosen {
+	color: var(--text-accent);
+	font-size: 0.85em;
+	margin-top: 0.3rem;
+}
+.mrmu-audio-tools-row {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.mrmu-pill.is-recording {
+	background: var(--color-red, #c0392b);
+	border-color: transparent;
+	color: #fff;
+}
+.mrmu-audio-list {
+	margin-top: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.mrmu-audio-row {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	padding: 0.3rem 0.4rem;
+}
+.mrmu-audio {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 34px;
+}
+.mrmu-audio-tools {
+	display: inline-flex;
+	gap: 0.1rem;
+}
+.mrmu-audio-missing {
+	color: var(--text-error, #c0392b);
+	font-size: 0.85em;
+}
+
+/* ---- catalog view ---- */
+.mrmu-view {
+	padding: 0.6rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+.mrmu-head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.mrmu-head-title {
+	font-weight: 700;
+	letter-spacing: 0.12em;
+}
+.mrmu-cta {
+	margin-left: auto;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+.mrmu-recordings {
+	background: var(--background-secondary);
+	border-radius: 10px;
+	padding: 0.5rem 0.6rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+.mrmu-recording {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.mrmu-recording-name {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	min-width: 6rem;
+}
+.mrmu-filters {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+.mrmu-toggles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	align-items: center;
+}
+.mrmu-sort {
+	margin-left: auto;
+}
+.mrmu-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.mrmu-row {
+	padding: 0.55rem 0.6rem;
+	border-radius: 10px;
+	background: var(--background-secondary);
+	cursor: pointer;
+}
+.mrmu-row:hover {
+	background: var(--background-modifier-hover);
+}
+.mrmu-row-scrap {
+	border-left: 3px solid var(--background-modifier-border);
+}
+.mrmu-row-title {
+	font-weight: 600;
+}
+.mrmu-row-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
+	margin-top: 0.3rem;
+	align-items: center;
+}
+.mrmu-badge {
+	font-size: 0.72em;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	border-radius: 6px;
+	padding: 0.05rem 0.4rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+}
+.mrmu-badge-audio {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+.mrmu-status-spark {
+	background: var(--background-modifier-border);
+}
+.mrmu-status-in-progress {
+	background: var(--color-yellow, #b8860b);
+	color: var(--text-on-accent, #000);
+}
+.mrmu-status-done {
+	background: var(--background-modifier-success, #2e7d32);
+	color: #fff;
+}
+
+/* ---- ChordPro ---- */
+.mrmu-chordpro {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+	padding: 0.6rem 0.7rem;
+	background: var(--background-primary);
+}
+.mrmu-cp-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	justify-content: flex-end;
+	margin-bottom: 0.4rem;
+}
+.mrmu-cp-key {
+	font-variant-numeric: tabular-nums;
+	color: var(--text-accent);
+	font-weight: 600;
+	margin-right: auto;
+}
+.mrmu-cp-stepper {
+	display: inline-flex;
+	gap: 0.1rem;
+}
+.mrmu-cp-title {
+	font-weight: 700;
+	font-size: 1.1em;
+}
+.mrmu-cp-subtitle {
+	color: var(--text-muted);
+	margin-bottom: 0.3rem;
+}
+.mrmu-cp-line {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0.15rem 0;
+}
+.mrmu-cp-seg {
+	display: inline-flex;
+	flex-direction: column;
+}
+.mrmu-cp-chord {
+	color: var(--text-accent);
+	font-weight: 700;
+	font-size: 0.85em;
+	min-height: 1.1em;
+	font-family: var(--font-monospace);
+}
+.mrmu-cp-text {
+	white-space: pre-wrap;
+}
+.mrmu-cp-section {
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-size: 0.8em;
+	color: var(--text-muted);
+	margin: 0.5rem 0 0.15rem;
+}
+.mrmu-cp-comment {
+	font-style: italic;
+	color: var(--text-muted);
+}
+.mrmu-cp-empty {
+	height: 0.6rem;
+}

@@ -1,0 +1,10 @@
+{
+	"id": "meridian-music",
+	"name": "Meridian Music",
+	"version": "0.1.0",
+	"minAppVersion": "1.4.0",
+	"description": "Capture and develop your music — lyric fragments, hooks, full songs, ChordPro chord sheets, and demo recordings — from first spark to finished work. Mobile-first, no network.",
+	"author": "Sam Barker",
+	"authorUrl": "https://github.com/SilentNinja06",
+	"isDesktopOnly": false
+}
