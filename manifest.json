@@ -1,7 +1,7 @@
 {
 	"id": "meridian-music",
 	"name": "Meridian Music",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"minAppVersion": "1.4.0",
 	"description": "Capture and develop your music — lyric fragments, hooks, full songs, ChordPro chord sheets, and demo recordings — from first spark to finished work. Mobile-first, no network.",
 	"author": "SilentNinja06",

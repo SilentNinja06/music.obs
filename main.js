@@ -14,9 +14,9 @@ var __export = (target, all) => {
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    for (let key2 of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key2) && key2 !== except)
+        __defProp(to, key2, { get: () => from[key2], enumerable: !(desc = __getOwnPropDesc(from, key2)) || desc.enumerable });
   }
   return to;
 };
@@ -29,7 +29,7 @@ __export(main_exports, {
   default: () => MeridianMusicPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian10 = require("obsidian");
+var import_obsidian11 = require("obsidian");
 
 // ../../packages/core/dist/settings/framework.js
 function mergeSettings(defaults, loaded) {
@@ -57,15 +57,61 @@ function applyUiStyles(plugin) {
   plugin.register(() => el.remove());
 }
 
-// src/settings.ts
+// ../../packages/ui/dist/startup.js
 var import_obsidian3 = require("obsidian");
+var DASHBOARD_PLUGIN_IDS = ["meridian-dash", "daily-dash"];
+function dashboardInstalled(app) {
+  var _a;
+  const enabled = (_a = app.plugins) === null || _a === void 0 ? void 0 : _a.enabledPlugins;
+  return DASHBOARD_PLUGIN_IDS.some((id) => {
+    var _a2;
+    return (_a2 = enabled === null || enabled === void 0 ? void 0 : enabled.has) === null || _a2 === void 0 ? void 0 : _a2.call(enabled, id);
+  });
+}
+var key = (pluginId) => `${pluginId}:open-on-startup`;
+function opensOnStartup(app, pluginId) {
+  try {
+    return app.loadLocalStorage(key(pluginId)) === true;
+  } catch (_a) {
+    return false;
+  }
+}
+function startupSetting(container, app, pluginId, label) {
+  if (dashboardInstalled(app))
+    return;
+  new import_obsidian3.Setting(container).setName(`Open ${label} when Obsidian starts`).setDesc("On this device. Hidden while a dashboard (MERIDIAN Dash or Daily Dashboard) is installed, since that opens first.").addToggle((t) => t.setValue(opensOnStartup(app, pluginId)).onChange((v) => {
+    try {
+      app.saveLocalStorage(key(pluginId), v ? true : null);
+    } catch (_a) {
+    }
+  }));
+}
+async function openViewOnStartup(app, pluginId, viewType) {
+  var _a, _b;
+  if (dashboardInstalled(app) || !opensOnStartup(app, pluginId))
+    return;
+  const ws = app.workspace;
+  const existing = ws.getLeavesOfType(viewType)[0];
+  if (existing) {
+    ws.revealLeaf(existing);
+    return;
+  }
+  const active = ws.getMostRecentLeaf();
+  const empty = active && ((_b = (_a = active.view) === null || _a === void 0 ? void 0 : _a.getViewType) === null || _b === void 0 ? void 0 : _b.call(_a)) === "empty";
+  const leaf = empty ? active : ws.getLeaf("tab");
+  await leaf.setViewState({ type: viewType, active: true });
+  ws.revealLeaf(leaf);
+}
+
+// src/settings.ts
+var import_obsidian4 = require("obsidian");
 var DEFAULT_SETTINGS = {
   worksFolder: "Music/Works",
   scrapsFolder: "Music/Scraps",
   audioFolder: "Music/Audio",
   defaultWorkType: "song"
 };
-var MusicSettingTab = class extends import_obsidian3.PluginSettingTab {
+var MusicSettingTab = class extends import_obsidian4.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -76,9 +122,10 @@ var MusicSettingTab = class extends import_obsidian3.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
+    startupSetting(containerEl, this.app, "meridian-music", "Music");
     const s = this.plugin.settings;
     containerEl.createEl("h3", { text: "Folders" });
-    const folder = (name, desc, get, set, placeholder) => new import_obsidian3.Setting(containerEl).setName(name).setDesc(desc).addText(
+    const folder = (name, desc, get, set, placeholder) => new import_obsidian4.Setting(containerEl).setName(name).setDesc(desc).addText(
       (t) => t.setPlaceholder(placeholder).setValue(get()).onChange(async (v) => {
         set(v.trim().replace(/\/+$/, ""));
         await this.save();
@@ -87,7 +134,7 @@ var MusicSettingTab = class extends import_obsidian3.PluginSettingTab {
     folder("Works folder", "Songs, lyrics, instrumentals.", () => s.worksFolder, (v) => s.worksFolder = v, "Music/Works");
     folder("Scraps folder", "Timestamped orphan fragments.", () => s.scrapsFolder, (v) => s.scrapsFolder = v, "Music/Scraps");
     folder("Audio folder", "Recorded and attached voice memos / demos.", () => s.audioFolder, (v) => s.audioFolder = v, "Music/Audio");
-    new import_obsidian3.Setting(containerEl).setName("Default work type").addDropdown((dd) => {
+    new import_obsidian4.Setting(containerEl).setName("Default work type").addDropdown((dd) => {
       dd.addOption("song", "Song");
       dd.addOption("lyric", "Lyric");
       dd.addOption("instrumental", "Instrumental");
@@ -101,7 +148,7 @@ var MusicSettingTab = class extends import_obsidian3.PluginSettingTab {
 };
 
 // src/store.ts
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // ../../packages/music-core/src/model.ts
 var WORK_STATUSES = ["spark", "sketch", "in-progress", "done"];
@@ -276,11 +323,11 @@ function displayName(n) {
   var _a;
   return ((_a = n.fm.title) != null ? _a : n.basename).toLowerCase();
 }
-function sortNotes(notes, key) {
+function sortNotes(notes, key2) {
   const s = [...notes];
   s.sort((a, b) => {
     var _a, _b;
-    switch (key) {
+    switch (key2) {
       case "recent":
         return noteTime(b, "modified") - noteTime(a, "modified") || displayName(a).localeCompare(displayName(b));
       case "created":
@@ -335,7 +382,7 @@ var MusicStore = class {
   }
   fileFor(note) {
     const f = this.app.vault.getAbstractFileByPath(note.path);
-    return f instanceof import_obsidian4.TFile ? f : null;
+    return f instanceof import_obsidian5.TFile ? f : null;
   }
   // ---- creating ----
   async createScrap(opts) {
@@ -363,7 +410,7 @@ var MusicStore = class {
     const dest = this.uniquePath(this.s.worksFolder, file.basename);
     await this.app.fileManager.renameFile(file, dest);
     const moved = this.app.vault.getAbstractFileByPath(dest);
-    return moved instanceof import_obsidian4.TFile ? moved : file;
+    return moved instanceof import_obsidian5.TFile ? moved : file;
   }
   /** Attach a scrap to an existing work: record it on the scrap and drop a link
    * into the work so the fragment travels with it. */
@@ -410,7 +457,7 @@ var MusicStore = class {
    * on desktop, reveal the file in the OS. */
   openAudio(path) {
     const f = this.app.vault.getAbstractFileByPath(path);
-    if (f instanceof import_obsidian4.TFile) void this.app.workspace.getLeaf(true).openFile(f);
+    if (f instanceof import_obsidian5.TFile) void this.app.workspace.getLeaf(true).openFile(f);
   }
   revealAudio(path) {
     const reveal = this.app.showInFolder;
@@ -428,19 +475,19 @@ var MusicStore = class {
     return file;
   }
   async ensureFolder(folder) {
-    const path = (0, import_obsidian4.normalizePath)(folder);
+    const path = (0, import_obsidian5.normalizePath)(folder);
     if (!path) return;
-    if (this.app.vault.getAbstractFileByPath(path) instanceof import_obsidian4.TFolder) return;
+    if (this.app.vault.getAbstractFileByPath(path) instanceof import_obsidian5.TFolder) return;
     await this.app.vault.createFolder(path).catch(() => {
     });
   }
   uniquePath(folder, base, ext = "md") {
-    const dir = (0, import_obsidian4.normalizePath)(folder);
+    const dir = (0, import_obsidian5.normalizePath)(folder);
     const safe = base || "untitled";
-    let candidate = (0, import_obsidian4.normalizePath)(`${dir}/${safe}.${ext}`);
+    let candidate = (0, import_obsidian5.normalizePath)(`${dir}/${safe}.${ext}`);
     let i = 1;
     while (this.app.vault.getAbstractFileByPath(candidate)) {
-      candidate = (0, import_obsidian4.normalizePath)(`${dir}/${safe}-${i}.${ext}`);
+      candidate = (0, import_obsidian5.normalizePath)(`${dir}/${safe}-${i}.${ext}`);
       i++;
     }
     return candidate;
@@ -471,10 +518,10 @@ function stamp() {
 }
 
 // src/capture.ts
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/audio.ts
-var import_obsidian5 = require("obsidian");
+var import_obsidian6 = require("obsidian");
 var AudioRecorder = class {
   constructor() {
     this.rec = null;
@@ -532,7 +579,7 @@ function extForMime(mime) {
 function renderAudioPlayer(container, app, store, path, opts = {}) {
   const row = container.createDiv({ cls: "mrmu-audio-row" });
   const file = app.vault.getAbstractFileByPath(path);
-  if (file instanceof import_obsidian5.TFile) {
+  if (file instanceof import_obsidian6.TFile) {
     const audio = row.createEl("audio", { cls: "mrmu-audio" });
     audio.controls = true;
     audio.preload = "metadata";
@@ -548,7 +595,7 @@ function renderAudioPlayer(container, app, store, path, opts = {}) {
 }
 function iconBtn(parent, icon, label, onClick) {
   const b = parent.createEl("button", { cls: "mrmu-icon-btn", attr: { "aria-label": label, title: label } });
-  (0, import_obsidian5.setIcon)(b, icon);
+  (0, import_obsidian6.setIcon)(b, icon);
   b.addEventListener("click", (e) => {
     e.preventDefault();
     onClick();
@@ -556,7 +603,7 @@ function iconBtn(parent, icon, label, onClick) {
 }
 
 // src/capture.ts
-var CaptureModal = class extends import_obsidian6.Modal {
+var CaptureModal = class extends import_obsidian7.Modal {
   constructor(app, plugin) {
     super(app);
     this.plugin = plugin;
@@ -609,7 +656,7 @@ var CaptureModal = class extends import_obsidian6.Modal {
     }
     this.destBodyEl = dest.createDiv({ cls: "mrmu-dest-body" });
     this.renderDestBody();
-    new import_obsidian6.Setting(contentEl).setName("Title").setDesc("Optional.").addText((t) => t.setPlaceholder("untitled").onChange((v) => this.title = v.trim()));
+    new import_obsidian7.Setting(contentEl).setName("Title").setDesc("Optional.").addText((t) => t.setPlaceholder("untitled").onChange((v) => this.title = v.trim()));
     const audio = contentEl.createDiv({ cls: "mrmu-field" });
     audio.createDiv({ cls: "mrmu-label", text: "Audio" });
     const audioTools = audio.createDiv({ cls: "mrmu-audio-tools-row" });
@@ -623,14 +670,14 @@ var CaptureModal = class extends import_obsidian6.Modal {
     attachBtn.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", () => void this.onAttachFile(fileInput));
     this.audioListEl = audio.createDiv({ cls: "mrmu-audio-list" });
-    new import_obsidian6.Setting(contentEl).addButton((b) => b.setButtonText("Cancel").onClick(() => this.close())).addButton(
+    new import_obsidian7.Setting(contentEl).addButton((b) => b.setButtonText("Cancel").onClick(() => this.close())).addButton(
       (b) => b.setButtonText("Save").setCta().onClick(() => void this.save())
     );
   }
   renderDestBody() {
     this.destBodyEl.empty();
     if (this.destination === "work") {
-      new import_obsidian6.Setting(this.destBodyEl).setName("Work type").addDropdown((dd) => {
+      new import_obsidian7.Setting(this.destBodyEl).setName("Work type").addDropdown((dd) => {
         dd.addOption("song", "Song");
         dd.addOption("lyric", "Lyric");
         dd.addOption("instrumental", "Instrumental");
@@ -665,7 +712,7 @@ var CaptureModal = class extends import_obsidian6.Modal {
         const row = list.createDiv({ cls: "mrmu-workrow", text: w.fm.title || w.basename });
         row.addEventListener("click", () => {
           const f = this.app.vault.getAbstractFileByPath(w.path);
-          this.attachTarget = f instanceof import_obsidian6.TFile ? f : null;
+          this.attachTarget = f instanceof import_obsidian7.TFile ? f : null;
           chosen.setText(this.attachTarget ? `\u2192 ${w.fm.title || w.basename}` : "");
           list.empty();
           search.value = w.fm.title || w.basename;
@@ -694,7 +741,7 @@ var CaptureModal = class extends import_obsidian6.Modal {
       }
     } catch (e) {
       console.error("Meridian Music: recording failed", e);
-      new import_obsidian6.Notice("Couldn't record (mic permission?). Attach a file instead.");
+      new import_obsidian7.Notice("Couldn't record (mic permission?). Attach a file instead.");
       (_a = this.recorder) == null ? void 0 : _a.dispose();
       this.recorder = null;
       btn.setText("\u25CF Record");
@@ -723,7 +770,7 @@ var CaptureModal = class extends import_obsidian6.Modal {
   }
   async save() {
     if (!this.body.trim() && !this.title.trim() && this.audioPaths.length === 0) {
-      new import_obsidian6.Notice("Nothing to capture yet.");
+      new import_obsidian7.Notice("Nothing to capture yet.");
       return;
     }
     const title = this.title.trim() || void 0;
@@ -740,11 +787,11 @@ var CaptureModal = class extends import_obsidian6.Modal {
       }
     } catch (e) {
       console.error("Meridian Music: capture failed", e);
-      new import_obsidian6.Notice("Couldn't save the capture.");
+      new import_obsidian7.Notice("Couldn't save the capture.");
       return;
     }
     this.plugin.notifyChanged();
-    new import_obsidian6.Notice(`Captured: ${file.basename}`);
+    new import_obsidian7.Notice(`Captured: ${file.basename}`);
     this.close();
     void this.app.workspace.getLeaf(true).openFile(file);
   }
@@ -757,7 +804,7 @@ var CaptureModal = class extends import_obsidian6.Modal {
 };
 
 // src/chordview.ts
-var import_obsidian7 = require("obsidian");
+var import_obsidian8 = require("obsidian");
 function renderChordPro(el, source) {
   let semi = 0;
   const wrap = el.createDiv({ cls: "mrmu-chordpro" });
@@ -766,7 +813,7 @@ function renderChordPro(el, source) {
   const stepper = controls.createDiv({ cls: "mrmu-cp-stepper" });
   const btn = (icon, aria, fn) => {
     const b = stepper.createEl("button", { cls: "mrmu-icon-btn", attr: { "aria-label": aria, title: aria } });
-    (0, import_obsidian7.setIcon)(b, icon);
+    (0, import_obsidian8.setIcon)(b, icon);
     b.addEventListener("click", (e) => {
       e.preventDefault();
       fn();
@@ -818,11 +865,11 @@ function renderLine(body, line) {
 }
 
 // src/catalogview.ts
-var import_obsidian9 = require("obsidian");
+var import_obsidian10 = require("obsidian");
 
 // src/confirm.ts
-var import_obsidian8 = require("obsidian");
-var ConfirmModal = class extends import_obsidian8.Modal {
+var import_obsidian9 = require("obsidian");
+var ConfirmModal = class extends import_obsidian9.Modal {
   constructor(app, opts, onResult) {
     super(app);
     this.opts = opts;
@@ -859,7 +906,7 @@ function confirmAction(app, opts) {
 
 // src/catalogview.ts
 var VIEW_TYPE_MUSIC = "meridian-music-catalog";
-var MusicCatalogView = class extends import_obsidian9.ItemView {
+var MusicCatalogView = class extends import_obsidian10.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.plugin = plugin;
@@ -971,7 +1018,7 @@ var MusicCatalogView = class extends import_obsidian9.ItemView {
     }
     if (n.fm.audio && n.fm.audio.length) {
       const a = meta.createSpan({ cls: "mrmu-badge mrmu-badge-audio" });
-      (0, import_obsidian9.setIcon)(a.createSpan(), "music");
+      (0, import_obsidian10.setIcon)(a.createSpan(), "music");
       a.createSpan({ text: String(n.fm.audio.length) });
     }
     main.addEventListener("click", () => {
@@ -979,7 +1026,7 @@ var MusicCatalogView = class extends import_obsidian9.ItemView {
       if (f) void this.app.workspace.getLeaf(false).openFile(f);
     });
     const del = row.createEl("button", { cls: "mrmu-icon-btn mrmu-row-del", attr: { "aria-label": "Delete this idea", title: "Delete this idea" } });
-    (0, import_obsidian9.setIcon)(del, "trash-2");
+    (0, import_obsidian10.setIcon)(del, "trash-2");
     del.addEventListener("click", (e) => {
       e.stopPropagation();
       void this.confirmDelete(n);
@@ -997,7 +1044,7 @@ var MusicCatalogView = class extends import_obsidian9.ItemView {
     if (!ok) return;
     await this.plugin.store.deleteNote(n);
     this.plugin.notifyChanged();
-    new import_obsidian9.Notice(`Deleted: ${name}`);
+    new import_obsidian10.Notice(`Deleted: ${name}`);
   }
   renderListOnly() {
     this.render();
@@ -1016,7 +1063,7 @@ function toggle(arr, v) {
 
 // src/main.ts
 var MUSIC_CHANGED_EVENT = "meridian-music:changed";
-var MeridianMusicPlugin = class extends import_obsidian10.Plugin {
+var MeridianMusicPlugin = class extends import_obsidian11.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1027,6 +1074,7 @@ var MeridianMusicPlugin = class extends import_obsidian10.Plugin {
     applyUiStyles(this);
     this.addSettingTab(new MusicSettingTab(this.app, this));
     this.registerView(VIEW_TYPE_MUSIC, (leaf) => new MusicCatalogView(leaf, this));
+    this.app.workspace.onLayoutReady(() => void openViewOnStartup(this.app, "meridian-music", VIEW_TYPE_MUSIC));
     this.registerMarkdownCodeBlockProcessor("chordpro", (src, el) => renderChordPro(el, src));
     this.addRibbonIcon("mic", "Capture a music idea", () => this.openCapture());
     this.addCommand({ id: "capture", name: "Capture a music idea", callback: () => this.openCapture() });
